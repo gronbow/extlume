@@ -1,6 +1,6 @@
 # 外接显示器亮度工具 GitHub 发布规划
 
-> 状态：本地发布前审计完成，正在创建 GitHub 仓库
+> 状态：公开仓库与首次 CI 已完成，正在生成 Draft Release
 > 日期：2026-07-26
 > 正式产品名：ExtLume
 > 目标首发：`v0.2.0-beta.1`
@@ -115,10 +115,11 @@
 - [x] 自动化测试与只读探针
 - [x] 安装包与便携包最终复验
 - [x] 通用版真实 H25T7-3 读取、15% → 25% 写入与回读
-- [ ] GitHub Actions 干净环境验证
+- [x] GitHub Actions 干净环境验证
 - [x] 项目名最终确认：ExtLume
 - [x] 获取 GitHub 授权
-- [ ] 创建仓库、运行 GitHub Actions 并生成 Draft Release
+- [x] 创建公开仓库并运行 GitHub Actions
+- [ ] 生成并复核 Draft Release
 
 ## 10. 授权节点
 
