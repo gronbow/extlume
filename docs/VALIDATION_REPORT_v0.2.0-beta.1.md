@@ -87,6 +87,10 @@ test monitor was left at the user's requested 25%.
 - Installing with the desktop-icon task created `ExtLume.lnk`, targeting the
   installed `ExtLume.exe` and inheriting its embedded application icon.
   Uninstall removed both the shortcut and executable.
+- The selected dark rounded-square logo with a white monitor outline and lime
+  brightness curve was propagated to the documentation PNG and a nine-size
+  Windows ICO (16–256 px). The icon extracted from the built executable
+  matched the selected artwork at 32 px.
 - The controlled release directory contained only the four expected ExtLume
   assets; stale pre-rename artifacts were excluded.
 - A Windows Defender custom scan of the final release directory completed with
