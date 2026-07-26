@@ -21,6 +21,8 @@ Coverage includes:
 - mirrored-source grouping;
 - physical-description to EDID-target mapping;
 - internal, virtual, and built-in-clone software-overlay guards;
+- glass-theme primary, secondary, and accent contrast thresholds;
+- custom-slider coordinate mapping, clamping, and non-user update behavior;
 - live read-only DisplayConfig discovery; and
 - live read-only monitor refresh.
 
@@ -36,6 +38,9 @@ No automated test writes a physical monitor brightness value.
 - one, two, and four monitor cards
 - empty state
 - narrow minimum window size
+- title-bar fallback when optional DWM attributes are unsupported
+- dark scrollbar with multi-monitor overflow
+- keyboard focus plus arrow, Page Up/Page Down, Home, and End input
 
 ## Hardware matrix
 

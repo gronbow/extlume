@@ -56,6 +56,8 @@
     <Compile Include="Services\MonitorManager.cs" />
     <Compile Include="Services\SoftwareDimmingService.cs" />
     <Compile Include="UI\DimmingOverlayForm.cs" />
+    <Compile Include="UI\BrightnessSlider.cs" />
+    <Compile Include="UI\GlassTheme.cs" />
     <Compile Include="UI\MainForm.cs" />
     <Compile Include="UI\MonitorCard.cs" />
     <Compile Include="UI\UiText.cs" />

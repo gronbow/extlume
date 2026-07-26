@@ -31,6 +31,8 @@ namespace ExtLume.Tests
             Run("PhysicalTargetMapping", TestPhysicalTargetMapping);
             Run("SoftwareOverlayGuards", TestSoftwareOverlayGuards);
             Run("LanguageOverride", TestLanguageOverride);
+            Run("GlassThemeContrast", TestGlassThemeContrast);
+            Run("BrightnessSlider", TestBrightnessSlider);
             if (HasArgument(args, "--skip-live"))
             {
                 Console.WriteLine("[SKIP] LiveDisplayDiscoveryReadOnly");
@@ -368,6 +370,53 @@ namespace ExtLume.Tests
                     "protected",
                     StringComparison.OrdinalIgnoreCase) >= 0,
                 "duplicate-mode safety resource");
+        }
+
+        private static void TestGlassThemeContrast()
+        {
+            True(
+                GlassTheme.ContrastRatio(
+                    GlassTheme.TextPrimary,
+                    GlassTheme.BackgroundTop) >= 7.0,
+                "primary text contrast");
+            True(
+                GlassTheme.ContrastRatio(
+                    GlassTheme.TextSecondary,
+                    GlassTheme.BackgroundTop) >= 4.5,
+                "secondary text contrast");
+            True(
+                GlassTheme.ContrastRatio(
+                    GlassTheme.Accent,
+                    GlassTheme.BackgroundTop) >= 7.0,
+                "accent contrast");
+        }
+
+        private static void TestBrightnessSlider()
+        {
+            using (BrightnessSlider slider = new BrightnessSlider())
+            {
+                slider.Size = new Size(226, 48);
+                Equal(0, slider.ValueFromClientX(13), "slider left edge");
+                Equal(50, slider.ValueFromClientX(113), "slider midpoint");
+                Equal(100, slider.ValueFromClientX(213), "slider right edge");
+                Equal(0, slider.ValueFromClientX(-100), "slider lower clamp");
+                Equal(100, slider.ValueFromClientX(500), "slider upper clamp");
+
+                int changed = 0;
+                int scrolled = 0;
+                slider.ValueChanged += delegate { changed++; };
+                slider.Scroll += delegate { scrolled++; };
+                slider.Value = 25;
+                Equal(25, slider.Value, "slider value");
+                Equal(1, changed, "programmatic value change");
+                Equal(0, scrolled, "programmatic update is not user input");
+                slider.Value = 150;
+                Equal(100, slider.Value, "slider value clamp");
+                Equal(
+                    System.Windows.Forms.AccessibleRole.Slider,
+                    slider.AccessibleRole,
+                    "slider accessibility role");
+            }
         }
 
         private static void TestCloneTopologyGrouping()

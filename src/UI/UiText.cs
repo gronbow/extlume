@@ -38,6 +38,11 @@ namespace ExtLume
             get { return chinese ? "外接显示器亮度" : "External brightness"; }
         }
 
+        public string Eyebrow
+        {
+            get { return chinese ? "显示控制" : "DISPLAY CONTROL"; }
+        }
+
         public string Intro
         {
             get
@@ -51,6 +56,16 @@ namespace ExtLume
         public string Refresh
         {
             get { return chinese ? "重新扫描" : "Rescan"; }
+        }
+
+        public string RefreshAccessibleDescription
+        {
+            get
+            {
+                return chinese
+                    ? "重新检测已连接的外接显示器。"
+                    : "Detect connected external displays again.";
+            }
         }
 
         public string Refreshing
@@ -181,6 +196,23 @@ namespace ExtLume
         public string UnexpectedError
         {
             get { return chinese ? "操作失败，请重新扫描后再试。" : "Operation failed. Rescan and try again."; }
+        }
+
+        public string BrightnessSliderDescription
+        {
+            get
+            {
+                return chinese
+                    ? "使用左右方向键微调，Page Up 和 Page Down 每次调节 10%。"
+                    : "Use arrow keys for fine adjustment, or Page Up and Page Down for 10 percent steps.";
+            }
+        }
+
+        public string BrightnessSliderName(string displayName)
+        {
+            return chinese
+                ? displayName + " 亮度"
+                : displayName + " brightness";
         }
 
         public string DisplaysReady(int count)

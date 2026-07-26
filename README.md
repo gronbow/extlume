@@ -6,7 +6,7 @@
 
 [简体中文](README.zh-CN.md)
 
-> The first public release is a beta.
+> Current public releases are beta builds.
 
 A small Windows tray app for the common case where Windows shows a brightness
 slider only for the laptop panel and the external monitor's buttons or OSD
@@ -14,6 +14,8 @@ cannot be used.
 
 The app detects active external displays, shows their EDID model names, and
 provides a separate slider for each safely identifiable display.
+
+<img src="assets/ui-preview.png" alt="ExtLume glass interface preview" width="640">
 
 ## What it does
 
@@ -28,6 +30,8 @@ provides a separate slider for each safely identifiable display.
 - Handles multiple displays, mirrored display groups, hot-plugging, and resume.
 - Runs in the system tray and can start with Windows.
 - Uses Chinese or English automatically.
+- Uses a high-DPI glass interface with mouse, wheel, and keyboard brightness
+  control.
 - Requires no administrator rights and makes no network connections.
 
 ## Two control modes
@@ -98,7 +102,7 @@ brightness value.
 The UI follows the Windows language. `--language=en` or `--language=zh-CN` can
 be used for a temporary language override.
 
-See the [v0.2.0-beta.1 validation report](docs/VALIDATION_REPORT_v0.2.0-beta.1.md)
+See the [v0.3.0-beta.1 validation report](docs/VALIDATION_REPORT_v0.3.0-beta.1.md)
 for automated, live-discovery, real-hardware, and beta-matrix results.
 
 ## Contributing and security

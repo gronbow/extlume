@@ -77,6 +77,22 @@ have finite timeouts. A native call cannot be forcibly cancelled safely, so a
 timed-out worker keeps the hardware gate until it eventually returns; the UI
 falls back or reports failure without freezing.
 
+## Presentation layer
+
+The WinForms presentation layer has no third-party UI dependency. It uses:
+
+- custom-painted rounded glass surfaces over an opaque graphite gradient;
+- a custom brightness slider with mouse, wheel, and keyboard input;
+- explicit accessibility roles, names, descriptions, and focus cues;
+- per-monitor DPI scaling and layout containers rather than fixed page
+  coordinates; and
+- optional Windows dark-mode, rounded-corner, backdrop, and scrollbar theme
+  requests that fail safely on unsupported Windows builds.
+
+Presentation changes do not bypass `MonitorManager`. Slider requests still pass
+through the same debounce, external-target descriptor, hardware gate, timeout,
+write/readback, and failure handling used by the original interface.
+
 ## Mirrored topology
 
 Multiple DisplayConfig targets can share one GDI source. The source is probed

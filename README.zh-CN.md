@@ -6,11 +6,13 @@
 
 [English](README.md)
 
-> 首次公开版本以 Beta 发布。
+> 当前公开版本仍为 Beta 测试版。
 
 这是一个轻量的 Windows 托盘应用，解决以下常见问题：Windows 只为笔记本内置屏提供亮度滑块，而外接显示器的实体按键或 OSD 菜单又无法使用。
 
 应用会自动识别当前外接显示器的 EDID 型号，并为每台能够安全定位的外接屏提供独立亮度滑块。
+
+<img src="assets/ui-preview.png" alt="ExtLume 毛玻璃界面预览" width="640">
 
 ## 主要功能
 
@@ -22,6 +24,7 @@
 - 支持多显示器、复制显示分组、热插拔和睡眠恢复；
 - 支持系统托盘与开机启动；
 - 根据系统语言自动显示中文或英文；
+- 使用适配高 DPI 的毛玻璃界面，并支持鼠标、滚轮和键盘调节；
 - 无需管理员权限，无网络请求。
 
 ## 两种控制模式
@@ -79,7 +82,7 @@ probe.cmd
 界面默认跟随 Windows 语言，也可用 `--language=en` 或 `--language=zh-CN` 临时指定。
 
 自动化、实时识别、真机写入和 Beta 硬件矩阵结果见
-[v0.2.0-beta.1 验证报告](docs/VALIDATION_REPORT_v0.2.0-beta.1.md)。
+[v0.3.0-beta.1 验证报告](docs/VALIDATION_REPORT_v0.3.0-beta.1.md)。
 
 ## 贡献与安全
 

@@ -109,14 +109,42 @@ if ($ddcText -notmatch 'SharesSourceWithInternal[\s\S]+physicalCount != targets\
     Add-Failure 'An internal clone can reach positional physical-monitor mapping.'
 }
 
-$expectedVersion = '0.2.0-beta.1'
+$expectedVersion = '0.3.0-beta.1'
+$expectedNumericVersion = '0.3.0.0'
 $appInfo = Get-Content -LiteralPath (Join-Path $sourceRoot 'AppInfo.cs') -Raw
+$assemblyInfo = Get-Content -LiteralPath (Join-Path $sourceRoot 'AssemblyInfo.cs') -Raw
+$manifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'app.manifest') -Raw
 $installer = Get-Content -LiteralPath (Join-Path $projectRoot 'installer\ExtLume.iss') -Raw
+$packageScript = Get-Content -LiteralPath (Join-Path $projectRoot 'scripts\package-release.ps1') -Raw
+$releaseWorkflow = Get-Content -LiteralPath (Join-Path $projectRoot '.github\workflows\release.yml') -Raw
 if ($appInfo -notmatch [regex]::Escape('Version = "' + $expectedVersion + '"')) {
     Add-Failure 'AppInfo version does not match the release version.'
 }
+if ($assemblyInfo -notmatch [regex]::Escape('AssemblyInformationalVersion("' + $expectedVersion + '")') -or
+    $assemblyInfo -notmatch [regex]::Escape('AssemblyFileVersion("' + $expectedNumericVersion + '")')) {
+    Add-Failure 'Assembly version metadata does not match the release version.'
+}
+if ($manifest -notmatch [regex]::Escape('version="' + $expectedNumericVersion + '"')) {
+    Add-Failure 'Application manifest version does not match the release version.'
+}
 if ($installer -notmatch [regex]::Escape('#define MyAppVersion "' + $expectedVersion + '"')) {
     Add-Failure 'Installer version does not match the release version.'
+}
+if ($installer -notmatch [regex]::Escape('#define MyAppNumericVersion "' + $expectedNumericVersion + '"')) {
+    Add-Failure 'Installer numeric version does not match the release version.'
+}
+if ($packageScript -notmatch [regex]::Escape('$version = ''' + $expectedVersion + '''')) {
+    Add-Failure 'Portable-package version does not match the release version.'
+}
+if ($releaseWorkflow -notmatch [regex]::Escape('$expected = ''v' + $expectedVersion + '''') -or
+    $releaseWorkflow -notmatch [regex]::Escape('RELEASE_NOTES_v' + $expectedVersion + '.md')) {
+    Add-Failure 'GitHub release workflow does not match the release version.'
+}
+$releaseNotesPath = Join-Path $projectRoot "docs\RELEASE_NOTES_v$expectedVersion.md"
+$validationReportPath = Join-Path $projectRoot "docs\VALIDATION_REPORT_v$expectedVersion.md"
+if (-not (Test-Path -LiteralPath $releaseNotesPath) -or
+    -not (Test-Path -LiteralPath $validationReportPath)) {
+    Add-Failure 'Versioned release notes or validation report is missing.'
 }
 
 if ($failures.Count -gt 0) {
