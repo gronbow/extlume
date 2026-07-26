@@ -9,7 +9,7 @@ $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactsRoot = Join-Path $projectRoot 'artifacts'
 $releaseRoot = Join-Path $artifactsRoot 'release'
 $stageRoot = Join-Path $artifactsRoot 'portable-stage'
-$version = '0.2.0-beta.1'
+$version = '0.3.0-beta.1'
 $archiveName = "ExtLume-$version-portable.zip"
 $archivePath = Join-Path $releaseRoot $archiveName
 
@@ -58,6 +58,7 @@ if (Test-Path -LiteralPath $archivePath) {
 
 New-Item -ItemType Directory -Path $stageRoot | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $stageRoot 'docs') | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $stageRoot 'assets') | Out-Null
 
 $rootFiles = @(
     'LICENSE',
@@ -72,10 +73,18 @@ foreach ($file in $rootFiles) {
 $docFiles = @(
     'COMPATIBILITY.md',
     'COMPATIBILITY.zh-CN.md',
-    'VALIDATION_REPORT_v0.2.0-beta.1.md'
+    'VALIDATION_REPORT_v0.3.0-beta.1.md'
 )
 foreach ($file in $docFiles) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "docs\$file") -Destination (Join-Path $stageRoot 'docs')
+}
+
+$assetFiles = @(
+    'app-logo.png',
+    'ui-preview.png'
+)
+foreach ($file in $assetFiles) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$file") -Destination (Join-Path $stageRoot 'assets')
 }
 
 Copy-Item -LiteralPath (Join-Path $artifactsRoot 'ExtLume.exe') -Destination $stageRoot

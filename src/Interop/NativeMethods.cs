@@ -248,6 +248,19 @@ namespace ExtLume
             IntPtr physicalMonitor,
             byte vcpCode,
             uint newValue);
+
+        [DllImport("dwmapi.dll")]
+        internal static extern int DwmSetWindowAttribute(
+            IntPtr windowHandle,
+            int attribute,
+            ref int attributeValue,
+            int attributeSize);
+
+        [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+        internal static extern int SetWindowTheme(
+            IntPtr windowHandle,
+            string subApplicationName,
+            string subIdList);
     }
 
     public static class InteropLayout

@@ -51,47 +51,67 @@ namespace ExtLume
             startHidden = shouldStartHidden;
 
             AutoScaleMode = AutoScaleMode.Dpi;
-            BackColor = Color.FromArgb(246, 247, 249);
-            ClientSize = new Size(570, 480);
+            BackColor = GlassTheme.BackgroundBottom;
+            ClientSize = new Size(640, 560);
+            DoubleBuffered = true;
             Font = text.CreateUiFont(9F, FontStyle.Regular);
             Icon = ExtractApplicationIcon();
             MaximizeBox = false;
-            MinimumSize = new Size(520, 340);
+            MinimumSize = new Size(560, 430);
             StartPosition = FormStartPosition.CenterScreen;
             Text = text.WindowTitle;
 
+            AuroraBackgroundPanel background = new AuroraBackgroundPanel();
+            background.Dock = DockStyle.Fill;
+            background.Padding = new Padding(18);
+
             TableLayoutPanel root = new TableLayoutPanel();
+            root.BackColor = Color.Transparent;
             root.ColumnCount = 1;
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             root.Dock = DockStyle.Fill;
+            root.Margin = new Padding(0);
             root.RowCount = 3;
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 124F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
 
             Panel header = BuildHeader();
             root.Controls.Add(header, 0, 0);
 
             monitorList = new FlowLayoutPanel();
             monitorList.AutoScroll = true;
-            monitorList.BackColor = BackColor;
+            monitorList.BackColor = Color.Transparent;
             monitorList.Dock = DockStyle.Fill;
             monitorList.FlowDirection = FlowDirection.TopDown;
-            monitorList.Padding = new Padding(16, 10, 16, 10);
+            monitorList.Margin = new Padding(0);
+            monitorList.Padding = new Padding(0, 4, 0, 2);
             monitorList.WrapContents = false;
+            monitorList.HandleCreated += delegate
+            {
+                GlassTheme.ApplyDarkScrollBars(monitorList);
+            };
             monitorList.Resize += MonitorListResize;
             root.Controls.Add(monitorList, 0, 1);
 
+            GlassPanel statusPanel = new GlassPanel();
+            statusPanel.CornerRadius = 15;
+            statusPanel.Dock = DockStyle.Fill;
+            statusPanel.Margin = new Padding(0, 7, 0, 0);
+
             statusLabel = new Label();
             statusLabel.AutoEllipsis = true;
+            statusLabel.BackColor = Color.Transparent;
             statusLabel.Dock = DockStyle.Fill;
             statusLabel.Font = text.CreateUiFont(8.5F, FontStyle.Regular);
-            statusLabel.ForeColor = Color.FromArgb(92, 92, 92);
-            statusLabel.Padding = new Padding(18, 0, 18, 0);
-            statusLabel.Text = text.Refreshing;
+            statusLabel.ForeColor = GlassTheme.TextSecondary;
+            statusLabel.Padding = new Padding(15, 0, 15, 0);
+            statusLabel.Text = "●  " + text.Refreshing;
             statusLabel.TextAlign = ContentAlignment.MiddleLeft;
-            root.Controls.Add(statusLabel, 0, 2);
-            Controls.Add(root);
+            statusPanel.Controls.Add(statusLabel);
+            root.Controls.Add(statusPanel, 0, 2);
+            background.Controls.Add(root);
+            Controls.Add(background);
 
             ContextMenuStrip trayMenu = new ContextMenuStrip();
             ToolStripMenuItem openItem = new ToolStripMenuItem(text.Open);
@@ -154,48 +174,76 @@ namespace ExtLume
 
         private Panel BuildHeader()
         {
-            Panel header = new Panel();
-            header.BackColor = Color.White;
+            GlassPanel header = new GlassPanel();
+            header.AccentGlow = true;
+            header.CornerRadius = 26;
             header.Dock = DockStyle.Fill;
-            header.Padding = new Padding(18, 12, 18, 10);
+            header.Margin = new Padding(0, 0, 0, 12);
+            header.Padding = new Padding(22, 15, 22, 14);
+            header.StrongSurface = true;
+
+            TableLayoutPanel layout = new TableLayoutPanel();
+            layout.BackColor = Color.Transparent;
+            layout.ColumnCount = 2;
+            layout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Percent, 100F));
+            layout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Absolute, 122F));
+            layout.Dock = DockStyle.Fill;
+            layout.Margin = new Padding(0);
+            layout.RowCount = 3;
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 21F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            Label eyebrow = new Label();
+            eyebrow.AutoEllipsis = true;
+            eyebrow.BackColor = Color.Transparent;
+            eyebrow.Dock = DockStyle.Fill;
+            eyebrow.Font = text.CreateUiFont(8F, FontStyle.Bold);
+            eyebrow.ForeColor = GlassTheme.Accent;
+            eyebrow.Margin = new Padding(1, 0, 8, 0);
+            eyebrow.Text = text.Eyebrow;
+            eyebrow.TextAlign = ContentAlignment.MiddleLeft;
 
             Label heading = new Label();
             heading.AutoEllipsis = true;
-            heading.Font = text.CreateUiFont(15F, FontStyle.Bold);
-            heading.Location = new Point(18, 7);
-            heading.Size = new Size(360, 48);
+            heading.BackColor = Color.Transparent;
+            heading.Dock = DockStyle.Fill;
+            heading.Font = text.CreateUiFont(18F, FontStyle.Bold);
+            heading.ForeColor = GlassTheme.TextPrimary;
+            heading.Margin = new Padding(0, 0, 8, 0);
             heading.Text = text.Heading;
             heading.TextAlign = ContentAlignment.MiddleLeft;
 
             Label intro = new Label();
-            intro.Font = text.CreateUiFont(8.8F, FontStyle.Regular);
-            intro.ForeColor = Color.FromArgb(92, 92, 92);
-            intro.Location = new Point(20, 70);
-            intro.Size = new Size(530, 44);
+            intro.AutoEllipsis = true;
+            intro.BackColor = Color.Transparent;
+            intro.Dock = DockStyle.Fill;
+            intro.Font = text.CreateUiFont(9F, FontStyle.Regular);
+            intro.ForeColor = GlassTheme.TextSecondary;
+            intro.Margin = new Padding(1, 0, 0, 0);
             intro.Text = text.Intro;
             intro.TextAlign = ContentAlignment.MiddleLeft;
 
-            Button button = new Button();
-            button.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            GlassButton button = new GlassButton();
+            button.AccessibleDescription = text.RefreshAccessibleDescription;
+            button.AccessibleName = text.Refresh;
             button.AutoSize = false;
-            button.BackColor = Color.White;
-            button.FlatStyle = FlatStyle.System;
-            button.Location = new Point(446, 31);
+            button.Dock = DockStyle.Fill;
+            button.Font = text.CreateUiFont(9F, FontStyle.Bold);
+            button.Margin = new Padding(10, 8, 0, 10);
             button.Name = "RefreshButton";
-            button.Size = new Size(104, 34);
             button.Text = text.Refresh;
-            button.UseVisualStyleBackColor = true;
             button.Click += delegate { RequestRefresh(); };
 
-            header.Controls.Add(heading);
-            header.Controls.Add(intro);
-            header.Controls.Add(button);
-            header.Resize += delegate
-            {
-                button.Left = header.ClientSize.Width - button.Width - 18;
-                intro.Width = Math.Max(180, header.ClientSize.Width - intro.Left - 18);
-                heading.Width = Math.Max(180, button.Left - heading.Left - 12);
-            };
+            layout.Controls.Add(eyebrow, 0, 0);
+            layout.Controls.Add(heading, 0, 1);
+            layout.Controls.Add(button, 1, 0);
+            layout.SetRowSpan(button, 2);
+            layout.Controls.Add(intro, 0, 2);
+            layout.SetColumnSpan(intro, 2);
+            header.Controls.Add(layout);
             return header;
         }
 
@@ -249,7 +297,7 @@ namespace ExtLume
                         refreshButton.Enabled = false;
                     }
 
-                    statusLabel.Text = text.Refreshing;
+                    statusLabel.Text = "●  " + text.Refreshing;
                     MonitorRefreshResult refreshResult =
                         await BuildRefreshResultAsync();
 
@@ -265,7 +313,7 @@ namespace ExtLume
                 if (!IsDisposed && !Disposing)
                 {
                     ShowEmptyState();
-                    statusLabel.Text = text.UnexpectedError;
+                    statusLabel.Text = "●  " + text.UnexpectedError;
                 }
             }
             finally
@@ -368,12 +416,12 @@ namespace ExtLume
                 if (result.ExternalDisplayCount > 0)
                 {
                     ShowProtectedDuplicateState();
-                    statusLabel.Text = text.BuiltInDisplayUnchanged;
+                    statusLabel.Text = "●  " + text.BuiltInDisplayUnchanged;
                 }
                 else
                 {
                     ShowEmptyState();
-                    statusLabel.Text = text.NoExternalDisplay;
+                    statusLabel.Text = "●  " + text.NoExternalDisplay;
                 }
 
                 return;
@@ -396,7 +444,8 @@ namespace ExtLume
                 monitorList.Controls.Add(card);
             }
 
-            statusLabel.Text = text.DisplaysReady(result.ExternalDisplayCount);
+            statusLabel.Text = "●  " + text.DisplaysReady(
+                result.ExternalDisplayCount);
         }
 
         private async void CardBrightnessRequested(
@@ -538,34 +587,47 @@ namespace ExtLume
             ClearMonitorCards();
             dimmingService.Clear();
 
-            TableLayoutPanel empty = new TableLayoutPanel();
-            empty.BackColor = Color.White;
-            empty.BorderStyle = BorderStyle.FixedSingle;
-            empty.ColumnCount = 1;
-            empty.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            empty.Margin = new Padding(0);
+            GlassPanel empty = new GlassPanel();
+            empty.CornerRadius = 24;
+            empty.StrongSurface = true;
+            empty.AccentGlow = true;
+            empty.Margin = new Padding(0, 0, 0, 14);
             empty.Padding = new Padding(22, 18, 22, 18);
-            empty.RowCount = 2;
-            empty.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            empty.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             empty.Size = new Size(CalculateCardWidth(), 180);
+
+            TableLayoutPanel emptyLayout = new TableLayoutPanel();
+            emptyLayout.BackColor = Color.Transparent;
+            emptyLayout.ColumnCount = 1;
+            emptyLayout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Percent, 100F));
+            emptyLayout.Dock = DockStyle.Fill;
+            emptyLayout.Margin = new Padding(0);
+            emptyLayout.RowCount = 2;
+            emptyLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 54F));
+            emptyLayout.RowStyles.Add(
+                new RowStyle(SizeType.Percent, 100F));
 
             Label title = new Label();
             title.AutoEllipsis = true;
+            title.BackColor = Color.Transparent;
             title.Dock = DockStyle.Fill;
-            title.Font = text.CreateUiFont(11.5F, FontStyle.Bold);
+            title.Font = text.CreateUiFont(12.5F, FontStyle.Bold);
+            title.ForeColor = GlassTheme.TextPrimary;
             title.Text = titleText;
             title.TextAlign = ContentAlignment.MiddleLeft;
 
             Label detail = new Label();
+            detail.AutoEllipsis = true;
+            detail.BackColor = Color.Transparent;
             detail.Dock = DockStyle.Fill;
             detail.Font = text.CreateUiFont(9F, FontStyle.Regular);
-            detail.ForeColor = Color.FromArgb(92, 92, 92);
+            detail.ForeColor = GlassTheme.TextSecondary;
             detail.Text = detailText;
             detail.TextAlign = ContentAlignment.TopLeft;
 
-            empty.Controls.Add(title, 0, 0);
-            empty.Controls.Add(detail, 0, 1);
+            emptyLayout.Controls.Add(title, 0, 0);
+            emptyLayout.Controls.Add(detail, 0, 1);
+            empty.Controls.Add(emptyLayout);
             monitorList.Controls.Add(empty);
         }
 
@@ -586,7 +648,7 @@ namespace ExtLume
                 - monitorList.Padding.Right
                 - SystemInformation.VerticalScrollBarWidth
                 - 4;
-            return Math.Max(420, width);
+            return Math.Max(430, width);
         }
 
         private void MonitorListResize(object sender, EventArgs e)
@@ -688,6 +750,12 @@ namespace ExtLume
             dimmingService.Dispose();
             trayIcon.Visible = false;
             Application.Exit();
+        }
+
+        protected override void OnHandleCreated(EventArgs eventArgs)
+        {
+            base.OnHandleCreated(eventArgs);
+            WindowBackdrop.Apply(Handle);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs eventArgs)

@@ -1,6 +1,6 @@
 #define MyAppName "ExtLume"
-#define MyAppVersion "0.2.0-beta.1"
-#define MyAppNumericVersion "0.2.0.0"
+#define MyAppVersion "0.3.0-beta.1"
+#define MyAppNumericVersion "0.3.0.0"
 #define MyAppExeName "ExtLume.exe"
 
 [Setup]
@@ -43,7 +43,9 @@ Source: "..\README.zh-CN.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\PRIVACY.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\COMPATIBILITY.md"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "..\docs\COMPATIBILITY.zh-CN.md"; DestDir: "{app}\docs"; Flags: ignoreversion
-Source: "..\docs\VALIDATION_REPORT_v0.2.0-beta.1.md"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\docs\VALIDATION_REPORT_v0.3.0-beta.1.md"; DestDir: "{app}\docs"; Flags: ignoreversion
+Source: "..\assets\app-logo.png"; DestDir: "{app}\assets"; Flags: ignoreversion
+Source: "..\assets\ui-preview.png"; DestDir: "{app}\assets"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\ExtLume"; Filename: "{app}\{#MyAppExeName}"
