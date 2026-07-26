@@ -1,6 +1,6 @@
 # 外接显示器亮度工具 GitHub 发布规划
 
-> 状态：公开仓库、CI 与 Draft Release 已完成，等待最终公开确认
+> 状态：`v0.2.0-beta.1` 已作为公开 Pre-release 发布
 > 日期：2026-07-26
 > 正式产品名：ExtLume
 > 目标首发：`v0.2.0-beta.1`
@@ -120,7 +120,7 @@
 - [x] 获取 GitHub 授权
 - [x] 创建公开仓库并运行 GitHub Actions
 - [x] 生成并复核 Draft Release
-- [ ] 维护者确认后公开 Beta Release
+- [x] 维护者确认并公开 Beta Release
 
 ## 10. 授权节点
 
