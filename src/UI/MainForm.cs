@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -28,9 +29,13 @@ namespace ExtLume
         private bool refreshInProgress;
         private bool refreshRequested;
         private bool trayNoticeShown;
+        private int layoutDpi;
+        private int fontDpi;
+        private readonly int fontReferenceDpi;
         private const int DdcProbeTimeoutMilliseconds = 4000;
         private const int DdcWriteTimeoutMilliseconds = 5000;
         private const int DdcGateWaitMilliseconds = 350;
+        private const int WmDpiChanged = 0x02E0;
 
         public MainForm(EventWaitHandle instanceShowEvent, bool shouldStartHidden)
             : this(instanceShowEvent, shouldStartHidden, null)
@@ -49,8 +54,11 @@ namespace ExtLume
             hardwareGate = new SemaphoreSlim(1, 1);
             showEvent = instanceShowEvent;
             startHidden = shouldStartHidden;
+            layoutDpi = DpiLayout.LogicalDpi;
+            fontReferenceDpi = DpiLayout.GetSystemDpi();
+            fontDpi = fontReferenceDpi;
 
-            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = GlassTheme.BackgroundBottom;
             ClientSize = new Size(640, 560);
             DoubleBuffered = true;
@@ -408,44 +416,61 @@ namespace ExtLume
 
         private void ApplyRefreshResult(MonitorRefreshResult result)
         {
-            ClearMonitorCards();
-            dimmingService.Clear();
-
-            if (result.Monitors.Count == 0)
+            monitorList.SuspendLayout();
+            try
             {
-                if (result.ExternalDisplayCount > 0)
+                ClearMonitorCards();
+                dimmingService.Clear();
+
+                if (result.Monitors.Count == 0)
                 {
-                    ShowProtectedDuplicateState();
-                    statusLabel.Text = "●  " + text.BuiltInDisplayUnchanged;
-                }
-                else
-                {
-                    ShowEmptyState();
-                    statusLabel.Text = "●  " + text.NoExternalDisplay;
+                    if (result.ExternalDisplayCount > 0)
+                    {
+                        ShowProtectedDuplicateState();
+                        statusLabel.Text = "●  " + text.BuiltInDisplayUnchanged;
+                    }
+                    else
+                    {
+                        ShowEmptyState();
+                        statusLabel.Text = "●  " + text.NoExternalDisplay;
+                    }
+
+                    return;
                 }
 
-                return;
+                for (int index = 0; index < result.Monitors.Count; index++)
+                {
+                    MonitorDescriptor monitor = result.Monitors[index];
+                    if (monitor.ControlKind == BrightnessControlKind.SoftwareDimming)
+                    {
+                        int storedLevel = settings.GetSoftwareLevel(monitor.Id);
+                        monitor.CurrentPercent = storedLevel;
+                        monitor.CurrentRaw = (uint)storedLevel;
+                        dimmingService.SetLevel(monitor.Target, storedLevel);
+                    }
+
+                    MonitorCard card = new MonitorCard(monitor, text);
+                    DpiLayout.ScaleControl(
+                        card,
+                        DpiLayout.LogicalDpi,
+                        layoutDpi);
+                    DpiLayout.ScaleFonts(
+                        card,
+                        fontReferenceDpi,
+                        layoutDpi);
+                    card.Width = CalculateCardWidth();
+                    card.BrightnessRequested += CardBrightnessRequested;
+                    monitorList.Controls.Add(card);
+                }
+
+                statusLabel.Text = "●  " + text.DisplaysReady(
+                    result.ExternalDisplayCount);
             }
-
-            for (int index = 0; index < result.Monitors.Count; index++)
+            finally
             {
-                MonitorDescriptor monitor = result.Monitors[index];
-                if (monitor.ControlKind == BrightnessControlKind.SoftwareDimming)
-                {
-                    int storedLevel = settings.GetSoftwareLevel(monitor.Id);
-                    monitor.CurrentPercent = storedLevel;
-                    monitor.CurrentRaw = (uint)storedLevel;
-                    dimmingService.SetLevel(monitor.Target, storedLevel);
-                }
-
-                MonitorCard card = new MonitorCard(monitor, text);
-                card.Width = CalculateCardWidth();
-                card.BrightnessRequested += CardBrightnessRequested;
-                monitorList.Controls.Add(card);
+                monitorList.ResumeLayout(true);
+                RefreshMonitorSurface();
             }
-
-            statusLabel.Text = "●  " + text.DisplaysReady(
-                result.ExternalDisplayCount);
         }
 
         private async void CardBrightnessRequested(
@@ -628,6 +653,15 @@ namespace ExtLume
             emptyLayout.Controls.Add(title, 0, 0);
             emptyLayout.Controls.Add(detail, 0, 1);
             empty.Controls.Add(emptyLayout);
+            DpiLayout.ScaleControl(
+                empty,
+                DpiLayout.LogicalDpi,
+                layoutDpi);
+            DpiLayout.ScaleFonts(
+                empty,
+                fontReferenceDpi,
+                layoutDpi);
+            empty.Width = CalculateCardWidth();
             monitorList.Controls.Add(empty);
         }
 
@@ -648,7 +682,9 @@ namespace ExtLume
                 - monitorList.Padding.Right
                 - SystemInformation.VerticalScrollBarWidth
                 - 4;
-            return Math.Max(430, width);
+            return Math.Max(
+                DpiLayout.ScaleLogical(430, layoutDpi),
+                width);
         }
 
         private void MonitorListResize(object sender, EventArgs e)
@@ -658,6 +694,18 @@ namespace ExtLume
             {
                 monitorList.Controls[index].Width = width;
             }
+        }
+
+        private void RefreshMonitorSurface()
+        {
+            if (monitorList.IsDisposed)
+            {
+                return;
+            }
+
+            monitorList.PerformLayout();
+            monitorList.Invalidate(true);
+            Invalidate(true);
         }
 
         private void StartupMenuItemClick(object sender, EventArgs e)
@@ -755,7 +803,58 @@ namespace ExtLume
         protected override void OnHandleCreated(EventArgs eventArgs)
         {
             base.OnHandleCreated(eventArgs);
+            ApplyLayoutDpi(DpiLayout.GetWindowDpi(this));
             WindowBackdrop.Apply(Handle);
+        }
+
+        protected override void WndProc(ref Message message)
+        {
+            if (message.Msg == WmDpiChanged)
+            {
+                int targetDpi = (int)(message.WParam.ToInt64() & 0xFFFF);
+                ApplyLayoutDpi(targetDpi);
+                if (message.LParam != IntPtr.Zero)
+                {
+                    NativeMethods.Rect suggested =
+                        (NativeMethods.Rect)Marshal.PtrToStructure(
+                            message.LParam,
+                            typeof(NativeMethods.Rect));
+                    SetBounds(
+                        suggested.Left,
+                        suggested.Top,
+                        suggested.Right - suggested.Left,
+                        suggested.Bottom - suggested.Top,
+                        BoundsSpecified.All);
+                }
+
+                message.Result = IntPtr.Zero;
+                return;
+            }
+
+            base.WndProc(ref message);
+        }
+
+        private void ApplyLayoutDpi(int targetDpi)
+        {
+            if (targetDpi == layoutDpi)
+            {
+                return;
+            }
+
+            SuspendLayout();
+            try
+            {
+                DpiLayout.ScaleControl(this, layoutDpi, targetDpi);
+                DpiLayout.ScaleFonts(this, fontDpi, targetDpi);
+                layoutDpi = targetDpi;
+                fontDpi = targetDpi;
+            }
+            finally
+            {
+                ResumeLayout(true);
+            }
+
+            RefreshMonitorSurface();
         }
 
         protected override void OnFormClosing(FormClosingEventArgs eventArgs)

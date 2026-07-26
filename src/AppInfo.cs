@@ -8,7 +8,7 @@ namespace ExtLume
     {
         public const string ProductName = "ExtLume";
         public const string ShortName = "ExtLume";
-        public const string Version = "0.3.0-beta.1";
+        public const string Version = "0.3.0-beta.2";
         public const string MutexName = "Local\\ExtLume-5E7A3914-9368-4937-AD5C-50BFFCB4FD38";
         public const string ShowEventName = "Local\\ExtLume-Show-0DD3D353-A87C-4E7E-B050-60A3AA7879F3";
         public const string RegistryRoot = @"Software\ExtLume";

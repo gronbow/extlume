@@ -82,7 +82,7 @@ probe.cmd
 界面默认跟随 Windows 语言，也可用 `--language=en` 或 `--language=zh-CN` 临时指定。
 
 自动化、实时识别、真机写入和 Beta 硬件矩阵结果见
-[v0.3.0-beta.1 验证报告](docs/VALIDATION_REPORT_v0.3.0-beta.1.md)。
+[v0.3.0-beta.2 验证报告](docs/VALIDATION_REPORT_v0.3.0-beta.2.md)。
 
 ## 贡献与安全
 

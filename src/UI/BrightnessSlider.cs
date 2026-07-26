@@ -250,8 +250,9 @@ namespace ExtLume
         {
             Graphics graphics = eventArgs.Graphics;
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            float scale = DpiLayout.PaintScale(this, graphics);
             RectangleF track = GetTrackBounds();
-            float thumbRadius = 9F;
+            float thumbRadius = 9F * scale;
             float ratio = (currentValue - minimum)
                 / (float)(maximum - minimum);
             float thumbCenter = track.Left + (track.Width * ratio);
@@ -285,10 +286,10 @@ namespace ExtLume
             }
 
             RectangleF glowBounds = new RectangleF(
-                thumbCenter - thumbRadius - 5F,
-                (ClientSize.Height / 2F) - thumbRadius - 5F,
-                (thumbRadius + 5F) * 2F,
-                (thumbRadius + 5F) * 2F);
+                thumbCenter - thumbRadius - (5F * scale),
+                (ClientSize.Height / 2F) - thumbRadius - (5F * scale),
+                (thumbRadius + (5F * scale)) * 2F,
+                (thumbRadius + (5F * scale)) * 2F);
             using (SolidBrush glow = new SolidBrush(
                 Enabled
                     ? Color.FromArgb(Focused ? 46 : 28, GlassTheme.Accent)
@@ -306,7 +307,7 @@ namespace ExtLume
                 Enabled ? GlassTheme.TextPrimary : Color.FromArgb(112, 116, 124)))
             using (Pen ring = new Pen(
                 Enabled ? GlassTheme.Accent : GlassTheme.AccentMuted,
-                Focused ? 3F : 2F))
+                (Focused ? 3F : 2F) * scale))
             {
                 graphics.FillEllipse(thumb, thumbBounds);
                 graphics.DrawEllipse(ring, thumbBounds);
@@ -316,8 +317,12 @@ namespace ExtLume
             {
                 Rectangle focusBounds = Rectangle.Inflate(
                     Rectangle.Round(track),
-                    4,
-                    8);
+                    DpiLayout.ScaleLogical(
+                        4,
+                        DpiLayout.GetWindowDpi(this)),
+                    DpiLayout.ScaleLogical(
+                        8,
+                        DpiLayout.GetWindowDpi(this)));
                 ControlPaint.DrawFocusRectangle(
                     graphics,
                     focusBounds,
@@ -328,8 +333,11 @@ namespace ExtLume
 
         private RectangleF GetTrackBounds()
         {
-            const float horizontalInset = 13F;
-            const float trackHeight = 7F;
+            float scale = DpiLayout.ScaleFactor(
+                DpiLayout.LogicalDpi,
+                DpiLayout.GetWindowDpi(this));
+            float horizontalInset = 13F * scale;
+            float trackHeight = 7F * scale;
             return new RectangleF(
                 horizontalInset,
                 (ClientSize.Height - trackHeight) / 2F,

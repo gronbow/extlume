@@ -17,7 +17,21 @@ namespace ExtLume.Tools
         private static int Main(string[] args)
         {
             string expectedModel = GetArgument(args, "--model=");
+            string language = GetArgument(args, "--language=");
+            string moveXValue = GetArgument(args, "--move-x=");
+            string moveYValue = GetArgument(args, "--move-y=");
+            string returnXValue = GetArgument(args, "--return-x=");
+            string returnYValue = GetArgument(args, "--return-y=");
             bool captureOnly = HasArgument(args, "--capture-only");
+            bool visible = HasArgument(args, "--visible");
+            int moveX = 0;
+            int moveY = 0;
+            int returnX = 0;
+            int returnY = 0;
+            bool moveRequested = Int32.TryParse(moveXValue, out moveX)
+                && Int32.TryParse(moveYValue, out moveY);
+            bool returnRequested = Int32.TryParse(returnXValue, out returnX)
+                && Int32.TryParse(returnYValue, out returnY);
             int testPercent = 0;
             int restorePercent = 0;
             if (String.IsNullOrEmpty(expectedModel)
@@ -32,7 +46,10 @@ namespace ExtLume.Tools
                 Console.Error.WriteLine(
                     "Usage: --model=<exact model> "
                     + "(--capture-only | --test-percent=<0-100> "
-                    + "--restore-percent=<0-100>)");
+                    + "--restore-percent=<0-100>) "
+                    + "[--language=en|zh-CN] [--visible] "
+                    + "[--move-x=<x> --move-y=<y>] "
+                    + "[--return-x=<x> --return-y=<y>]");
                 return 2;
             }
 
@@ -44,11 +61,17 @@ namespace ExtLume.Tools
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            MainForm form = new MainForm(null, false, "en");
-            form.Location = new Point(-30000, -30000);
-            form.Opacity = 0.01;
-            form.ShowInTaskbar = false;
-            form.StartPosition = FormStartPosition.Manual;
+            MainForm form = new MainForm(
+                null,
+                false,
+                String.IsNullOrEmpty(language) ? "en" : language);
+            if (!visible)
+            {
+                form.Location = new Point(-30000, -30000);
+                form.Opacity = 0.01;
+                form.ShowInTaskbar = false;
+                form.StartPosition = FormStartPosition.Manual;
+            }
             form.Shown += async delegate
             {
                 try
@@ -59,7 +82,14 @@ namespace ExtLume.Tools
                         testPercent,
                         restorePercent,
                         capturePath,
-                        captureOnly);
+                        captureOnly,
+                        visible,
+                        moveRequested,
+                        moveX,
+                        moveY,
+                        returnRequested,
+                        returnX,
+                        returnY);
                     exitCode = 0;
                 }
                 catch (Exception exception)
@@ -88,7 +118,14 @@ namespace ExtLume.Tools
             int testPercent,
             int restorePercent,
             string capturePath,
-            bool captureOnly)
+            bool captureOnly,
+            bool screenCapture,
+            bool moveRequested,
+            int moveX,
+            int moveY,
+            bool returnRequested,
+            int returnX,
+            int returnY)
         {
             MonitorCard card = null;
             for (int attempt = 0; attempt < 40; attempt++)
@@ -128,6 +165,18 @@ namespace ExtLume.Tools
                     "The custom brightness slider was not found.");
             }
 
+            if (moveRequested)
+            {
+                form.Location = new Point(moveX, moveY);
+                await Task.Delay(700);
+            }
+
+            if (returnRequested)
+            {
+                form.Location = new Point(returnX, returnY);
+                await Task.Delay(700);
+            }
+
             Console.WriteLine(
                 "Visible card before input: "
                 + card.Monitor.DisplayName
@@ -142,7 +191,8 @@ namespace ExtLume.Tools
                     "capture-only");
                 if (!String.IsNullOrEmpty(capturePath))
                 {
-                    CaptureForm(form, capturePath);
+                    await Task.Delay(350);
+                    CaptureForm(form, capturePath, screenCapture);
                 }
 
                 return;
@@ -172,7 +222,7 @@ namespace ExtLume.Tools
             VerifyFreshRead(expectedModel, restorePercent, "restore");
             if (!String.IsNullOrEmpty(capturePath))
             {
-                CaptureForm(form, capturePath);
+                CaptureForm(form, capturePath, screenCapture);
             }
 
             Console.WriteLine(
@@ -181,7 +231,10 @@ namespace ExtLume.Tools
                 + "%.");
         }
 
-        private static void CaptureForm(Form form, string capturePath)
+        private static void CaptureForm(
+            Form form,
+            string capturePath,
+            bool screenCapture)
         {
             string fullPath = Path.GetFullPath(capturePath);
             string directory = Path.GetDirectoryName(fullPath);
@@ -194,9 +247,22 @@ namespace ExtLume.Tools
                 form.Width,
                 form.Height))
             {
-                form.DrawToBitmap(
-                    bitmap,
-                    new Rectangle(Point.Empty, form.Size));
+                if (screenCapture)
+                {
+                    using (Graphics graphics = Graphics.FromImage(bitmap))
+                    {
+                        graphics.CopyFromScreen(
+                            form.PointToScreen(Point.Empty),
+                            Point.Empty,
+                            form.Size);
+                    }
+                }
+                else
+                {
+                    form.DrawToBitmap(
+                        bitmap,
+                        new Rectangle(Point.Empty, form.Size));
+                }
                 bitmap.Save(
                     fullPath,
                     System.Drawing.Imaging.ImageFormat.Png);
@@ -228,10 +294,32 @@ namespace ExtLume.Tools
             BrightnessSlider slider,
             int requestedPercent)
         {
-            int trackWidth = Math.Max(1, slider.ClientSize.Width - 26);
-            int x = 13 + (int)Math.Round(
-                trackWidth * (requestedPercent / 100.0),
-                MidpointRounding.AwayFromZero);
+            int firstX = -1;
+            int lastX = -1;
+            for (int candidate = 0;
+                candidate < slider.ClientSize.Width;
+                candidate++)
+            {
+                if (slider.ValueFromClientX(candidate) == requestedPercent)
+                {
+                    if (firstX < 0)
+                    {
+                        firstX = candidate;
+                    }
+
+                    lastX = candidate;
+                }
+            }
+
+            if (firstX < 0)
+            {
+                throw new InvalidOperationException(
+                    "No slider coordinate maps to "
+                    + requestedPercent
+                    + "%.");
+            }
+
+            int x = firstX + ((lastX - firstX) / 2);
             int y = slider.ClientSize.Height / 2;
             int mappedPercent = slider.ValueFromClientX(x);
             if (mappedPercent != requestedPercent)

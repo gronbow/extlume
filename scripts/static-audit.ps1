@@ -109,8 +109,8 @@ if ($ddcText -notmatch 'SharesSourceWithInternal[\s\S]+physicalCount != targets\
     Add-Failure 'An internal clone can reach positional physical-monitor mapping.'
 }
 
-$expectedVersion = '0.3.0-beta.1'
-$expectedNumericVersion = '0.3.0.0'
+$expectedVersion = '0.3.0-beta.2'
+$expectedNumericVersion = '0.3.0.1'
 $appInfo = Get-Content -LiteralPath (Join-Path $sourceRoot 'AppInfo.cs') -Raw
 $assemblyInfo = Get-Content -LiteralPath (Join-Path $sourceRoot 'AssemblyInfo.cs') -Raw
 $manifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'app.manifest') -Raw

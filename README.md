@@ -102,7 +102,7 @@ brightness value.
 The UI follows the Windows language. `--language=en` or `--language=zh-CN` can
 be used for a temporary language override.
 
-See the [v0.3.0-beta.1 validation report](docs/VALIDATION_REPORT_v0.3.0-beta.1.md)
+See the [v0.3.0-beta.2 validation report](docs/VALIDATION_REPORT_v0.3.0-beta.2.md)
 for automated, live-discovery, real-hardware, and beta-matrix results.
 
 ## Contributing and security

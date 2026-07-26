@@ -10,6 +10,6 @@ using System.Runtime.CompilerServices;
 [assembly: ComVisible(false)]
 [assembly: Guid("855728d5-3173-4e43-b228-20b0cbf7d5ec")]
 [assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyFileVersion("0.3.0.0")]
-[assembly: AssemblyInformationalVersion("0.3.0-beta.1")]
+[assembly: AssemblyFileVersion("0.3.0.1")]
+[assembly: AssemblyInformationalVersion("0.3.0-beta.2")]
 [assembly: InternalsVisibleTo("ExtLume.Tests")]
