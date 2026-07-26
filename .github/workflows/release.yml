@@ -1,0 +1,109 @@
+name: Draft release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate release tag
+        if: github.event_name == 'push'
+        shell: powershell
+        run: |
+          $expected = 'v0.2.0-beta.1'
+          if ($env:GITHUB_REF_NAME -ne $expected) {
+            throw "Tag $env:GITHUB_REF_NAME does not match $expected."
+          }
+
+      - name: Install pinned Inno Setup
+        shell: powershell
+        run: |
+          $version = '6.7.3'
+          $expectedHash = '9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732'
+          $download = Join-Path $env:RUNNER_TEMP "innosetup-$version.exe"
+          $installDirectory = Join-Path $env:RUNNER_TEMP 'InnoSetup'
+          $url = "https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-$version.exe"
+          Invoke-WebRequest -Uri $url -OutFile $download -UseBasicParsing
+
+          $actualHash = (Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualHash -ne $expectedHash) {
+            throw "Inno Setup SHA-256 mismatch: $actualHash"
+          }
+
+          $signature = Get-AuthenticodeSignature -LiteralPath $download
+          if ($signature.Status -ne 'Valid') {
+            throw "Inno Setup signature is not valid: $($signature.Status)"
+          }
+
+          $installer = Start-Process -FilePath $download -ArgumentList @(
+            '/CURRENTUSER',
+            '/SP-',
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            "/DIR=$installDirectory"
+          ) -PassThru -Wait
+          if ($installer.ExitCode -ne 0) {
+            throw "Inno Setup installation failed: $($installer.ExitCode)"
+          }
+
+          $iscc = Join-Path $installDirectory 'ISCC.exe'
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            throw 'ISCC.exe was not installed.'
+          }
+          "INNO_SETUP_PATH=$iscc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Static safety audit
+        shell: powershell
+        run: .\scripts\static-audit.ps1
+
+      - name: Build, test, and package
+        shell: powershell
+        run: .\scripts\build-release.ps1 -SkipLiveTests
+
+      - name: Attest release artifacts
+        if: github.event_name == 'push'
+        uses: actions/attest@v4
+        with:
+          subject-path: artifacts/release/*
+
+      - name: Upload release review artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ github.ref_name }}
+          path: artifacts/release/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create draft GitHub Release
+        if: github.event_name == 'push'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME `
+            --draft `
+            --verify-tag `
+            --title "ExtLume $env:GITHUB_REF_NAME" `
+            --notes-file docs/RELEASE_NOTES_v0.2.0-beta.1.md `
+            artifacts/release/*

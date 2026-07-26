@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.props" Condition="Exists('$(MSBuildToolsPath)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{866D6A07-7545-4553-B20E-A6B56327A5DF}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>ExtLume</RootNamespace>
+    <AssemblyName>ExtLume</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <ApplicationIcon>..\assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <LangVersion>5</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\artifacts\msbuild\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\artifacts\msbuild\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AppInfo.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Models.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Core\BrightnessMath.cs" />
+    <Compile Include="Core\MonitorIdentity.cs" />
+    <Compile Include="Interop\NativeMethods.cs" />
+    <Compile Include="Services\AppSettings.cs" />
+    <Compile Include="Services\DdcBrightnessService.cs" />
+    <Compile Include="Services\DisplayDiscoveryService.cs" />
+    <Compile Include="Services\MonitorManager.cs" />
+    <Compile Include="Services\SoftwareDimmingService.cs" />
+    <Compile Include="UI\DimmingOverlayForm.cs" />
+    <Compile Include="UI\MainForm.cs" />
+    <Compile Include="UI\MonitorCard.cs" />
+    <Compile Include="UI\UiText.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

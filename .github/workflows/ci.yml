@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Static safety audit
+        shell: powershell
+        run: .\scripts\static-audit.ps1
+
+      - name: Build and run non-hardware tests
+        shell: cmd
+        run: test.cmd --skip-live
+
+      - name: Upload review build
+        uses: actions/upload-artifact@v7
+        with:
+          name: ExtLume-ci-${{ github.sha }}
+          path: artifacts/ExtLume.exe
+          if-no-files-found: error
+          retention-days: 14
+
+  codeql:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+          build-mode: manual
+
+      - name: Build
+        shell: cmd
+        run: build.cmd
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4

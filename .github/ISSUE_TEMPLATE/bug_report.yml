@@ -1,0 +1,76 @@
+name: Bug report
+description: Report reproducible app behavior that is not specific to one monitor model.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include EDID serial numbers, raw Windows device paths, credentials, or unrelated system logs.
+        Hardware compatibility problems belong in the monitor compatibility form.
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: 0.2.0-beta.1
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2, x64
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Control mode shown by the app
+      options:
+        - Hardware · DDC/CI
+        - Software dimming
+        - No external display detected
+        - Not applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open...
+        2. Click...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I clicked Rescan and reproduced the problem.
+          required: true
+        - label: I removed private device paths and serial numbers.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

@@ -1,0 +1,23 @@
+# Build output
+artifacts/
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local tooling
+*.log
+*.tmp
+*.bak
+.idea/
+.vscode/
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
