@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using ExtLume;
@@ -10,6 +11,9 @@ namespace ExtLume.Tools
 {
     internal static class UiPreview
     {
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr windowHandle);
+
         [STAThread]
         private static void Main(string[] args)
         {
@@ -25,10 +29,20 @@ namespace ExtLume.Tools
             Application.SetCompatibleTextRenderingDefault(false);
             Form preview = BuildPreview();
             float scale = GetScale(args);
-            if (scale > 1F)
+            if (scale <= 0F)
+            {
+                IntPtr handle = preview.Handle;
+                scale = Math.Max(1F, GetDpiForWindow(handle) / 96F);
+            }
+
+            if (Math.Abs(scale - 1F) >= 0.001F)
             {
                 preview.Scale(new SizeF(scale, scale));
             }
+            ScaleFontsForTargetDpi(
+                preview,
+                GetSystemDpi(),
+                (int)Math.Round(96F * scale));
 
             string capturePath = GetArgumentValue(args, "--capture=");
             if (!String.IsNullOrEmpty(capturePath))
@@ -93,11 +107,52 @@ namespace ExtLume.Tools
             int percent;
             if (!Int32.TryParse(value, out percent))
             {
-                return 1F;
+                return 0F;
             }
 
             percent = Math.Max(100, Math.Min(250, percent));
             return percent / 100F;
+        }
+
+        private static int GetSystemDpi()
+        {
+            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                return Math.Max(96, (int)Math.Round(graphics.DpiX));
+            }
+        }
+
+        private static void ScaleFontsForTargetDpi(
+            Control control,
+            int sourceDpi,
+            int targetDpi)
+        {
+            bool inheritsParentFont = control.Parent != null
+                && Object.ReferenceEquals(
+                    control.Font,
+                    control.Parent.Font);
+            for (int index = 0; index < control.Controls.Count; index++)
+            {
+                ScaleFontsForTargetDpi(
+                    control.Controls[index],
+                    sourceDpi,
+                    targetDpi);
+            }
+
+            float factor = targetDpi / (float)Math.Max(96, sourceDpi);
+            if (Math.Abs(factor - 1F) >= 0.001F
+                && !inheritsParentFont
+                && control.Font != null)
+            {
+                Font current = control.Font;
+                control.Font = new Font(
+                    current.FontFamily,
+                    Math.Max(1F, current.SizeInPoints * factor),
+                    current.Style,
+                    GraphicsUnit.Point,
+                    current.GdiCharSet,
+                    current.GdiVerticalFont);
+            }
         }
 
         private static void CaptureAndClose(Form form, string capturePath)
@@ -128,7 +183,7 @@ namespace ExtLume.Tools
         {
             UiText text = new UiText();
             Form form = new Form();
-            form.AutoScaleMode = AutoScaleMode.Dpi;
+            form.AutoScaleMode = AutoScaleMode.None;
             form.BackColor = GlassTheme.BackgroundBottom;
             form.ClientSize = new Size(640, 560);
             form.Font = text.CreateUiFont(9F, FontStyle.Regular);

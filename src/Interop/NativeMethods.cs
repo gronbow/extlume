@@ -193,6 +193,9 @@ namespace ExtLume
             ref DisplayDevice displayDevice,
             uint flags);
 
+        [DllImport("user32.dll")]
+        internal static extern uint GetDpiForWindow(IntPtr windowHandle);
+
         [DllImport("dxva2.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetNumberOfPhysicalMonitorsFromHMONITOR(

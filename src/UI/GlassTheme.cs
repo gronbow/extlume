@@ -18,6 +18,7 @@ namespace ExtLume
         public static readonly Color AccentMuted = Color.FromArgb(112, 139, 37);
         public static readonly Color Success = Color.FromArgb(103, 224, 153);
         public static readonly Color Error = Color.FromArgb(255, 118, 126);
+        public static readonly Color ButtonBackground = Color.FromArgb(52, 56, 51);
 
         public static GraphicsPath CreateRoundedPath(
             RectangleF bounds,
@@ -213,27 +214,28 @@ namespace ExtLume
 
             Graphics graphics = eventArgs.Graphics;
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            float scale = DpiLayout.PaintScale(this, graphics);
             RectangleF shadowBounds = new RectangleF(
-                2F,
-                4F,
-                ClientSize.Width - 4F,
-                ClientSize.Height - 6F);
+                2F * scale,
+                4F * scale,
+                ClientSize.Width - (4F * scale),
+                ClientSize.Height - (6F * scale));
             using (GraphicsPath shadowPath = GlassTheme.CreateRoundedPath(
                 shadowBounds,
-                cornerRadius))
+                cornerRadius * scale))
             using (SolidBrush shadow = new SolidBrush(Color.FromArgb(56, 0, 0, 0)))
             {
                 graphics.FillPath(shadow, shadowPath);
             }
 
             RectangleF surfaceBounds = new RectangleF(
-                1F,
-                1F,
-                ClientSize.Width - 3F,
-                ClientSize.Height - 5F);
+                1F * scale,
+                1F * scale,
+                ClientSize.Width - (3F * scale),
+                ClientSize.Height - (5F * scale));
             using (GraphicsPath surfacePath = GlassTheme.CreateRoundedPath(
                 surfaceBounds,
-                cornerRadius))
+                cornerRadius * scale))
             {
                 Color top = strongSurface
                     ? Color.FromArgb(72, 255, 255, 255)
@@ -253,10 +255,10 @@ namespace ExtLume
                 if (accentGlow)
                 {
                     RectangleF glowBounds = new RectangleF(
-                        surfaceBounds.Right - 220F,
-                        surfaceBounds.Top - 110F,
-                        270F,
-                        210F);
+                        surfaceBounds.Right - (220F * scale),
+                        surfaceBounds.Top - (110F * scale),
+                        270F * scale,
+                        210F * scale);
                     using (GraphicsPath glowPath = new GraphicsPath())
                     {
                         glowPath.AddEllipse(glowBounds);
@@ -277,21 +279,23 @@ namespace ExtLume
                     }
                 }
 
-                using (Pen border = new Pen(GlassTheme.SurfaceBorder, 1F))
+                using (Pen border = new Pen(
+                    GlassTheme.SurfaceBorder,
+                    Math.Max(1F, scale)))
                 {
                     graphics.DrawPath(border, surfacePath);
                 }
 
                 using (Pen highlight = new Pen(
                     Color.FromArgb(54, 255, 255, 255),
-                    1F))
+                    Math.Max(1F, scale)))
                 {
                     RectangleF highlightBounds = surfaceBounds;
-                    highlightBounds.Inflate(-1F, -1F);
+                    highlightBounds.Inflate(-scale, -scale);
                     using (GraphicsPath highlightPath =
                         GlassTheme.CreateRoundedPath(
                             highlightBounds,
-                            Math.Max(0, cornerRadius - 1)))
+                            Math.Max(0F, (cornerRadius - 1F) * scale)))
                     {
                         graphics.DrawPath(highlight, highlightPath);
                     }
@@ -311,15 +315,26 @@ namespace ExtLume
                 ControlStyles.AllPaintingInWmPaint
                     | ControlStyles.OptimizedDoubleBuffer
                     | ControlStyles.ResizeRedraw
-                    | ControlStyles.SupportsTransparentBackColor
                     | ControlStyles.UserPaint,
                 true);
-            BackColor = Color.Transparent;
+            BackColor = GlassTheme.ButtonBackground;
             Cursor = Cursors.Hand;
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
             ForeColor = GlassTheme.TextPrimary;
             UseMnemonic = false;
+        }
+
+        protected override void OnSizeChanged(EventArgs eventArgs)
+        {
+            base.OnSizeChanged(eventArgs);
+            UpdateWindowRegion();
+        }
+
+        protected override void OnHandleCreated(EventArgs eventArgs)
+        {
+            base.OnHandleCreated(eventArgs);
+            UpdateWindowRegion();
         }
 
         protected override void OnMouseEnter(EventArgs eventArgs)
@@ -364,12 +379,14 @@ namespace ExtLume
         protected override void OnPaint(PaintEventArgs eventArgs)
         {
             Graphics graphics = eventArgs.Graphics;
+            graphics.Clear(BackColor);
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            float scale = DpiLayout.PaintScale(this, graphics);
             RectangleF bounds = new RectangleF(
-                1F,
-                1F,
-                ClientSize.Width - 3F,
-                ClientSize.Height - 3F);
+                scale,
+                scale,
+                ClientSize.Width - (3F * scale),
+                ClientSize.Height - (3F * scale));
             Color fill;
             Color border;
             if (!Enabled)
@@ -395,9 +412,9 @@ namespace ExtLume
 
             using (GraphicsPath path = GlassTheme.CreateRoundedPath(
                 bounds,
-                Math.Max(8, ClientSize.Height / 2)))
+                Math.Max(8F * scale, ClientSize.Height / 2F)))
             using (SolidBrush brush = new SolidBrush(fill))
-            using (Pen pen = new Pen(border, 1F))
+            using (Pen pen = new Pen(border, Math.Max(1F, scale)))
             {
                 graphics.FillPath(brush, path);
                 graphics.DrawPath(pen, path);
@@ -421,13 +438,37 @@ namespace ExtLume
             {
                 Rectangle focus = Rectangle.Inflate(
                     Rectangle.Round(bounds),
-                    -4,
-                    -4);
+                    -DpiLayout.ScaleLogical(4, DpiLayout.GetWindowDpi(this)),
+                    -DpiLayout.ScaleLogical(4, DpiLayout.GetWindowDpi(this)));
                 ControlPaint.DrawFocusRectangle(
                     graphics,
                     focus,
                     GlassTheme.Accent,
                     Color.Transparent);
+            }
+        }
+
+        private void UpdateWindowRegion()
+        {
+            if (ClientSize.Width < 2 || ClientSize.Height < 2)
+            {
+                return;
+            }
+
+            using (GraphicsPath path = GlassTheme.CreateRoundedPath(
+                new RectangleF(
+                    0F,
+                    0F,
+                    ClientSize.Width,
+                    ClientSize.Height),
+                ClientSize.Height / 2F))
+            {
+                Region previous = Region;
+                Region = new Region(path);
+                if (previous != null)
+                {
+                    previous.Dispose();
+                }
             }
         }
     }
@@ -462,12 +503,26 @@ namespace ExtLume
 
         public override Size GetPreferredSize(Size proposedSize)
         {
+            int dpi = DpiLayout.GetWindowDpi(this);
             Size textSize = TextRenderer.MeasureText(
                 String.IsNullOrEmpty(Text) ? " " : Text,
                 Font,
                 Size.Empty,
                 TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
-            return new Size(textSize.Width + 22, Math.Max(26, textSize.Height + 8));
+            return new Size(
+                textSize.Width + DpiLayout.ScaleLogical(22, dpi),
+                Math.Max(
+                    DpiLayout.ScaleLogical(26, dpi),
+                    textSize.Height + DpiLayout.ScaleLogical(8, dpi)));
+        }
+
+        protected override void OnHandleCreated(EventArgs eventArgs)
+        {
+            base.OnHandleCreated(eventArgs);
+            if (AutoSize)
+            {
+                Size = GetPreferredSize(Size.Empty);
+            }
         }
 
         protected override void OnTextChanged(EventArgs eventArgs)
@@ -496,11 +551,12 @@ namespace ExtLume
         {
             Graphics graphics = eventArgs.Graphics;
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            float scale = DpiLayout.PaintScale(this, graphics);
             RectangleF bounds = new RectangleF(
-                0.5F,
-                0.5F,
-                ClientSize.Width - 1F,
-                ClientSize.Height - 1F);
+                0.5F * scale,
+                0.5F * scale,
+                ClientSize.Width - scale,
+                ClientSize.Height - scale);
             Color fill = hardwareStyle
                 ? Color.FromArgb(38, GlassTheme.Accent)
                 : Color.FromArgb(30, 255, 255, 255);
@@ -514,7 +570,7 @@ namespace ExtLume
                 bounds,
                 ClientSize.Height / 2F))
             using (SolidBrush brush = new SolidBrush(fill))
-            using (Pen pen = new Pen(border, 1F))
+            using (Pen pen = new Pen(border, Math.Max(1F, scale)))
             {
                 graphics.FillPath(brush, path);
                 graphics.DrawPath(pen, path);

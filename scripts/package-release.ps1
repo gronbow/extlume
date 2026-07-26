@@ -9,7 +9,7 @@ $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactsRoot = Join-Path $projectRoot 'artifacts'
 $releaseRoot = Join-Path $artifactsRoot 'release'
 $stageRoot = Join-Path $artifactsRoot 'portable-stage'
-$version = '0.3.0-beta.1'
+$version = '0.3.0-beta.2'
 $archiveName = "ExtLume-$version-portable.zip"
 $archivePath = Join-Path $releaseRoot $archiveName
 
@@ -73,7 +73,7 @@ foreach ($file in $rootFiles) {
 $docFiles = @(
     'COMPATIBILITY.md',
     'COMPATIBILITY.zh-CN.md',
-    'VALIDATION_REPORT_v0.3.0-beta.1.md'
+    'VALIDATION_REPORT_v0.3.0-beta.2.md'
 )
 foreach ($file in $docFiles) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "docs\$file") -Destination (Join-Path $stageRoot 'docs')

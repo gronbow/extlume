@@ -4,6 +4,30 @@ All notable changes are documented here.
 
 ## [Unreleased]
 
+## [0.3.0-beta.2] - 2026-07-27
+
+### Fixed
+
+- Fixed clipped and overlapping text, badges, percentages, and controls on
+  displays using 125%–200% Windows scaling.
+- Fixed the missing percent sign and truncated Rescan button at 200% scaling.
+- Fixed per-monitor resizing when moving the window between displays with
+  different DPI settings.
+- Removed the rectangular paint artifact around the rounded Rescan button and
+  forced a clean relayout after display refreshes.
+
+### Changed
+
+- Layout dimensions, custom glass geometry, slider metrics, and dynamically
+  created monitor cards now follow the active window DPI explicitly.
+- Added deterministic DPI-scaling regression coverage and real-screen
+  validation tooling for mixed-DPI systems.
+
+### Safety
+
+- Display discovery, DDC/CI targeting, verified write/readback, built-in-panel
+  exclusion, clone guards, and software dimming are unchanged.
+
 ## [0.3.0-beta.1] - 2026-07-27
 
 ### Added

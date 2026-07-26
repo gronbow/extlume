@@ -32,6 +32,7 @@ namespace ExtLume.Tests
             Run("SoftwareOverlayGuards", TestSoftwareOverlayGuards);
             Run("LanguageOverride", TestLanguageOverride);
             Run("GlassThemeContrast", TestGlassThemeContrast);
+            Run("DpiLayoutScaling", TestDpiLayoutScaling);
             Run("BrightnessSlider", TestBrightnessSlider);
             if (HasArgument(args, "--skip-live"))
             {
@@ -416,6 +417,53 @@ namespace ExtLume.Tests
                     System.Windows.Forms.AccessibleRole.Slider,
                     slider.AccessibleRole,
                     "slider accessibility role");
+            }
+        }
+
+        private static void TestDpiLayoutScaling()
+        {
+            Equal(2F, DpiLayout.ScaleFactor(96, 192), "200 percent factor");
+            Equal(0.5F, DpiLayout.ScaleFactor(192, 96), "100 percent factor");
+            Equal(860, DpiLayout.ScaleLogical(430, 192), "scaled minimum width");
+
+            using (System.Windows.Forms.Panel root =
+                new System.Windows.Forms.Panel())
+            using (System.Windows.Forms.Panel card =
+                new System.Windows.Forms.Panel())
+            {
+                root.Size = new Size(640, 560);
+                root.Padding = new System.Windows.Forms.Padding(18);
+                card.Location = new Point(18, 150);
+                card.Margin = new System.Windows.Forms.Padding(0, 0, 0, 14);
+                card.Size = new Size(540, 204);
+                root.Controls.Add(card);
+
+                DpiLayout.ScaleControl(root, 96, 192);
+                Equal(new Size(1280, 1120), root.Size, "scaled root");
+                Equal(
+                    new System.Windows.Forms.Padding(36),
+                    root.Padding,
+                    "scaled outer padding");
+                Equal(new Size(1080, 408), card.Size, "scaled monitor card");
+                Equal(new Point(36, 300), card.Location, "scaled card position");
+                Equal(
+                    new System.Windows.Forms.Padding(0, 0, 0, 28),
+                    card.Margin,
+                    "scaled card margin");
+            }
+
+            using (System.Windows.Forms.Label label =
+                new System.Windows.Forms.Label())
+            {
+                label.Font = new Font(
+                    "Segoe UI",
+                    18F,
+                    FontStyle.Bold,
+                    GraphicsUnit.Point);
+                DpiLayout.ScaleFonts(label, 192, 96);
+                True(
+                    Math.Abs(label.Font.SizeInPoints - 9F) < 0.01F,
+                    "font follows per-monitor DPI");
             }
         }
 
